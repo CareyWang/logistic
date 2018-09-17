@@ -1,0 +1,22 @@
+{
+    "name": "careywong/logistic",
+    "type":"library",
+    "description": "A logistic interface set",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "careywong",
+            "email": "xidiancc@gmail.com"
+        }
+    ],
+    "require": {
+    	"php": ">=5.6",
+        "phpunit/phpunit": "~5",
+        "guzzlehttp/guzzle": "^6.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "Careywong\\Logistic\\": "src"
+        }
+    }
+}

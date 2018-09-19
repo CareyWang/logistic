@@ -1,12 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: cwang
- * Date: 2018/9/17
- * Time: 19:30.
- */
 
-namespace Careywong\Logistic;
+namespace Careywong\Logistics;
 
 class Trackingmore
 {

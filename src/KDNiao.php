@@ -1,15 +1,9 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: cwang
- * Date: 2018/9/17
- * Time: 19:41.
- */
 
-namespace Careywong\Logistic;
+namespace Careywong\Logistics;
 
-use Careywong\Logistic\Exceptions\HttpException;
-use Careywong\Logistic\Exceptions\InvalidArgumentException;
+use Careywong\Logistics\Exceptions\HttpException;
+use Careywong\Logistics\Exceptions\InvalidArgumentException;
 
 class KDNiao
 {

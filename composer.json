@@ -1,7 +1,7 @@
 {
-    "name": "careywong/logistic",
+    "name": "careywong/logistics",
     "type":"library",
-    "description": "A logistic interface set",
+    "description": "A logistics interface set",
     "license": "MIT",
     "authors": [
         {

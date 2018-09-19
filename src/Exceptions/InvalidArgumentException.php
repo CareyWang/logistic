@@ -1,6 +1,6 @@
 <?php
 
-namespace Careywong\Logistic\Exceptions;
+namespace Careywong\Logistics\Exceptions;
 
 class InvalidArgumentException extends Exception
 {

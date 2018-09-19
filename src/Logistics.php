@@ -1,16 +1,10 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: cwang
- * Date: 2018/9/18
- * Time: 17:59.
- */
 
-namespace Careywong\Logistic;
+namespace Careywong\Logistics;
 
-use Careywong\Logistic\Exceptions\InvalidArgumentException;
+use Careywong\Logistics\Exceptions\InvalidArgumentException;
 
-class Logistic
+class Logistics
 {
     const EXISTS_CLASS = [
         'KDNiao',

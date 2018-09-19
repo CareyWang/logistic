@@ -8,40 +8,20 @@
 
 namespace Careywong\Logistic;
 
-use GuzzleHttp\Client;
+use Careywong\Logistic\Exceptions\InvalidArgumentException;
+use Careywong\Logistic\Exceptions\HttpException;
 
 class KDNiao
 {
-    protected $ReqURL = "http://api.kdniao.cc/Ebusiness/EbusinessOrderHandle.aspx";
+    private $ReqURL = "http://api.kdniao.cc/Ebusiness/EbusinessOrderHandle.aspx";
     protected $EBusinessID;
     protected $AppKey;
     protected $RequestType;
 
-    public function __construct($EBusinessID, $AppKey)
+    public function setConfig($EBusinessID, $AppKey)
     {
         $this->EBusinessID = $EBusinessID;
         $this->AppKey = $AppKey;
-    }
-
-    /**
-     * @param array $request
-     * @return mixed
-     */
-    protected function getResponse($request)
-    {
-        $requestData = json_encode($request);
-
-        $datas = array(
-            'EBusinessID' => $this->EBusinessID,
-            'RequestType' => $this->RequestType,
-            'RequestData' => urlencode($requestData),
-            'DataType' => '2',
-        );
-
-        $datas['DataSign'] = $this->encrypt($requestData, $this->AppKey);
-        $result = $this->sendPost($this->ReqURL, $datas);
-
-        return json_decode($result, true);
     }
 
     /**
@@ -57,23 +37,19 @@ class KDNiao
         ];
 
         if (empty($this->AppKey) || empty($this->EBusinessID)) {
-            throw new \Exception('');
+            throw new InvalidArgumentException('InvalidArgumentException');
         }
 
-        if (empty($request['LogisticCode'])) {
-            return [
-                'Success' => '0',
-                'Reason' => '请求参数为空'
-            ];
+        if (empty($request['ShipperCode']) || empty($request['LogisticCode'])) {
+            throw new InvalidArgumentException('InvalidArgumentException');
         }
 
-        if (empty($request['ShipperCode'])) {
-            $request['ShipperCode'] = $this->getShipperCode($request)['ShipperCode'];
+        try {
+            $this->RequestType = 1002;
+            return $this->getResponse($request);
+        } catch (\Exception $e) {
+            throw new HttpException($e->getMessage(), $e->getCode(), $e);
         }
-
-        $this->RequestType = 1002;
-
-        return $this->getResponse($request);
     }
 
     /**
@@ -84,16 +60,43 @@ class KDNiao
     public function getShipperCode($request)
     {
         if (empty($request)) {
-            return [
+            return json_encode([
                 'Success' => '0',
                 'Reason' => '请求参数为空'
-            ];
+            ]);
         }
 
         $this->RequestType = 2002;
+        try {
+            $response = $this->getResponse($request); // 返回值可能为多个快递公司Code，按概率大小排序的
+            return $response;
+        } catch (\Exception $e) {
+            throw new HttpException($e->getMessage(), $e->getCode(), $e);
+        }
+    }
 
-        $response = $this->getResponse($request); // 返回值可能为多个快递公司Code，按概率大小排序的
-        return $response['Shippers'][0];
+    /**
+     * 请求接口
+     * @param array $request
+     * @return array
+     */
+    protected function getResponse($request)
+    {
+        $requestData = json_encode($request);
+
+        $datas = array(
+            'EBusinessID' => $this->EBusinessID,
+            'RequestType' => $this->RequestType,
+            'RequestData' => urlencode($requestData),
+            'DataType' => '2',
+        );
+
+        $datas['DataSign'] = $this->encrypt($requestData, $this->AppKey);
+        try {
+            return json_decode($this->sendPost($this->ReqURL, $datas), true);
+        } catch (\Exception $e) {
+            throw new HttpException($e->getMessage(), $e->getCode(), $e);
+        }
     }
 
     /**

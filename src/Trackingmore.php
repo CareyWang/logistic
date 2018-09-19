@@ -20,10 +20,17 @@ class Trackingmore
     const ROUTE_CREATE_TRACKING = 'trackings/post';
     const ROUTE_TRACKINGS_BATCH = 'trackings/batch';
     const ROUTE_TRACKINGS_REALTIME = 'trackings/realtime';
+    const ROUTE_TRACKINGS_RELETE = 'trackings/delete';
+    const ROUTE_TRACKINGS_UPDATE = 'trackings/update';
+    const ROUTE_TRACKINGS_GETUSEINFO = 'trackings/getuserinfo';
+    const ROUTE_TRACKINGS_GETSTATUS = 'trackings/getstatusnumber';
+    const ROUTE_TRACKINGS_NOTUPDATE = 'trackings/notupdate';
+    const ROUTE_TRACKINGS_REMOTE = 'trackings/remote';
+    const ROUTE_TRACKINGS_COSTTIME = 'trackings/costtime';
+    const ROUTE_TRACKINGS_UPDATEMORE = 'trackings/updatemore';
+    protected $apiKey = 'YOUR API KEY';
 
-    protected $apiKey;
-
-    public function __construct($apiKey)
+    public function setConfig($apiKey)
     {
         $this->apiKey = $apiKey;
     }
@@ -39,7 +46,7 @@ class Trackingmore
         } elseif ($method == 'POST') {
             curl_setopt($curlObj, CURLOPT_POST, true);
         } elseif ($method == 'PUT') {
-            curl_setopt($curlObj, CURLOPT_PUT, true);
+            curl_setopt($curlObj, CURLOPT_CUSTOMREQUEST, "PUT");
         } else {
             curl_setopt($curlObj, CURLOPT_CUSTOMREQUEST, $method);
         }
@@ -65,8 +72,9 @@ class Trackingmore
         return $response;
     }
 
+
     /**
-     * List all carriers.
+     * List all carriers
      * @return array|mixed
      */
     public function getCarrierList()
@@ -81,9 +89,9 @@ class Trackingmore
     }
 
     /**
-     * Detect a carrier by tracking code.
-     * @param $trackingNumber
-     * @return array|mixed
+     * Detect a carrier by tracking code
+     * @param string $trackingNumber  Tracking number
+     * @return array
      */
     public function detectCarrier($trackingNumber)
     {
@@ -99,31 +107,58 @@ class Trackingmore
 
     /**
      * List all trackings.
+     * @param string $numbers
+     * @param string $orders
      * @param int $page
      * @param int $limit
      * @param int $createdAtMin
      * @param int $createdAtMax
+     * @param int $update_time_min
+     * @param int $update_time_max
+     * @param int $order_created_time_min
+     * @param int $order_created_time_max
+     * @param string $lang
      * @return array|mixed
      */
-    public function getTrackingsList($page = 1, $limit = 100, $createdAtMin = 0, $createdAtMax = 0)
-    {
+    public function getTrackingsList(
+        $numbers = "",
+        $orders = "",
+        $page = 1,
+        $limit = 100,
+        $createdAtMin = 0,
+        $createdAtMax = 0,
+        $update_time_min = 0,
+        $update_time_max = 0,
+        $order_created_time_min = 0,
+        $order_created_time_max = 0,
+        $lang = ""
+    ) {
         $returnData = array();
         $sendData = array();
         $requestUrl = self::ROUTE_LIST_ALL_TRACKINGS;
         $createdAtMax = !empty($createdAtMax) ? $createdAtMax : time();
+        $update_time_max = !empty($update_time_max) ? $update_time_max : time();
+        $order_created_time_max = !empty($order_created_time_max) ? $order_created_time_max : time();
         $sendData['page'] = $page;
         $sendData['limit'] = $limit;
         $sendData['created_at_min'] = $createdAtMin;
         $sendData['created_at_max'] = $createdAtMax;
+        $sendData['update_time_min'] = $update_time_min;
+        $sendData['update_time_max'] = $update_time_max;
+        $sendData['order_created_time_min'] = $order_created_time_min;
+        $sendData['order_created_time_max'] = $order_created_time_max;
+        $sendData['lang'] = $lang;
+        $sendData['numbers'] = $numbers;
+        $sendData['orders'] = $orders;
         $result = $this->_getApiData($requestUrl, 'GET', $sendData);
         if ($result) {
-            $returnData = $result;
+            $returnData = json_decode($result, 1);
         }
         return $returnData;
     }
 
     /**
-     * Create a tracking item.
+     * Create a tracking item
      * @param $carrierCode
      * @param $trackingNumber
      * @param array $extraInfo
@@ -138,9 +173,16 @@ class Trackingmore
         $sendData['tracking_number'] = $trackingNumber;
         $sendData['carrier_code'] = $carrierCode;
         $sendData['title'] = !empty($extraInfo['title']) ? $extraInfo['title'] : null;
+        $sendData['logistics_channel'] = !empty($extraInfo['logistics_channel']) ? $extraInfo['logistics_channel'] : null;
         $sendData['customer_name'] = !empty($extraInfo['customer_name']) ? $extraInfo['customer_name'] : null;
         $sendData['customer_email'] = !empty($extraInfo['customer_email']) ? $extraInfo['customer_email'] : null;
         $sendData['order_id'] = !empty($extraInfo['order_id']) ? $extraInfo['order_id'] : null;
+        $sendData['customer_phone'] = !empty($extraInfo['customer_phone']) ? $extraInfo['customer_phone'] : null;
+        $sendData['order_create_time'] = !empty($extraInfo['order_create_time']) ? $extraInfo['order_create_time'] : null;
+        $sendData['destination_code'] = !empty($extraInfo['destination_code']) ? $extraInfo['destination_code'] : '';
+        $sendData['tracking_ship_date'] = !empty($extraInfo['tracking_ship_date']) ? $extraInfo['tracking_ship_date'] : null;
+        $sendData['tracking_postal_code'] = !empty($extraInfo['tracking_postal_code']) ? $extraInfo['tracking_postal_code'] : "";
+        $sendData['lang'] = !empty($extraInfo['lang']) ? $extraInfo['lang'] : "en";
 
         $result = $this->_getApiData($requestUrl, 'POST', $sendData);
         if ($result) {
@@ -151,8 +193,9 @@ class Trackingmore
 
     /**
      * Create multiple trackings.
-     * @param $multipleData
-     * @return array|mixed
+     * @access public
+     * @param  array $multipleData (Multiple tracking number,carrier code,title,customer name,customer email,order id,destination code,customer phone,order create time,tracking ship date,tracking postal code,special number destination,language)
+     * @return array
      */
     public function createMultipleTracking($multipleData)
     {
@@ -165,9 +208,17 @@ class Trackingmore
                 $items['tracking_number'] = !empty($val['tracking_number']) ? $val['tracking_number'] : null;
                 $items['carrier_code'] = !empty($val['carrier_code']) ? $val['carrier_code'] : null;
                 $items['title'] = !empty($val['title']) ? $val['title'] : null;
+                $items['logistics_channel'] = !empty($val['logistics_channel']) ? $val['logistics_channel'] : null;
                 $items['customer_name'] = !empty($val['customer_name']) ? $val['customer_name'] : null;
                 $items['customer_email'] = !empty($val['customer_email']) ? $val['customer_email'] : null;
                 $items['order_id'] = !empty($val['order_id']) ? $val['order_id'] : null;
+                $items['destination_code'] = !empty($val['destination_code']) ? $val['destination_code'] : null;
+                $items['customer_phone'] = !empty($val['customer_phone']) ? $val['customer_phone'] : null;
+                $items['order_create_time'] = !empty($val['order_create_time']) ? $val['order_create_time'] : null;
+                $items['tracking_ship_date'] = !empty($val['tracking_ship_date']) ? $val['tracking_ship_date'] : null;
+                $items['tracking_postal_code'] = !empty($val['tracking_postal_code']) ? $val['tracking_postal_code'] : null;
+                $items['specialNumberDestination'] = !empty($val['specialNumberDestination']) ? $val['specialNumberDestination'] : null;
+                $items['lang'] = !empty($val['lang']) ? $val['lang'] : 'en';
                 $sendData[] = $items;
             }
         }
@@ -179,20 +230,296 @@ class Trackingmore
         return $returnData;
     }
 
+
     /**
      * Get tracking results of a single tracking.
      * @param $carrierCode
      * @param $trackingNumber
+     * @param string $lang
      * @return array|mixed
      */
-    public function getSingleTrackingResult($carrierCode, $trackingNumber)
+    public function getSingleTrackingResult($carrierCode, $trackingNumber, $lang = '')
     {
         $returnData = array();
-        $requestUrl = self::ROUTE_TRACKINGS.'/'.$carrierCode.'/'.$trackingNumber;
+        $requestUrl = self::ROUTE_TRACKINGS . '/' . $carrierCode . '/' . $trackingNumber . '/' . $lang;
         $result = $this->_getApiData($requestUrl, 'GET');
         if ($result) {
             $returnData = json_decode($result, true);
         }
         return $returnData;
     }
+
+    /**
+     * Update Tracking item.
+     * @access public
+     * @param string $trackingNumber Tracking number
+     * @param string $carrierCode Carrier code
+     * @param array $extraInfo (Title,Customer name,email,order ID,customer phone,destination code,status) (optional)
+     * @return array
+     */
+    public function updateTrackingItem($carrierCode, $trackingNumber, $extraInfo)
+    {
+        $returnData = array();
+        $requestUrl = self::ROUTE_TRACKINGS . '/' . $carrierCode . '/' . $trackingNumber;
+        $sendData['title'] = !empty($extraInfo['title']) ? $extraInfo['title'] : null;
+        $sendData['logistics_channel'] = !empty($extraInfo['logistics_channel']) ? $extraInfo['logistics_channel'] : null;
+        $sendData['customer_name'] = !empty($extraInfo['customer_name']) ? $extraInfo['customer_name'] : null;
+        $sendData['customer_email'] = !empty($extraInfo['customer_email']) ? $extraInfo['customer_email'] : null;
+        $sendData['customer_phone'] = !empty($extraInfo['customer_phone']) ? $extraInfo['customer_phone'] : null;
+        $sendData['order_id'] = !empty($extraInfo['order_id']) ? $extraInfo['order_id'] : null;
+        $sendData['destination_code'] = !empty($extraInfo['destination_code']) ? $extraInfo['destination_code'] : null;
+        $sendData['status'] = !empty($extraInfo['status']) ? $extraInfo['status'] : null;
+        $result = $this->_getApiData($requestUrl, 'PUT', $sendData);
+        if ($result) {
+            $returnData = json_decode($result, true);
+        }
+        return $returnData;
+    }
+
+    /**
+     * Delete a tracking item.
+     * @param $carrierCode
+     * @param $trackingNumber
+     * @return array|mixed
+     */
+    public function deleteTrackingItem($carrierCode, $trackingNumber)
+    {
+        $returnData = array();
+        $requestUrl = self::ROUTE_TRACKINGS . '/' . $carrierCode . '/' . $trackingNumber;
+        $result = $this->_getApiData($requestUrl, 'DELETE');
+        if ($result) {
+            $returnData = json_decode($result, true);
+        }
+        return $returnData;
+    }
+
+    /**
+     * Get realtime tracking results of a single tracking
+     * @param $carrierCode
+     * @param $trackingNumber
+     * @param array $extraInfo
+     * @return array|mixed
+     */
+    public function getRealtimeTrackingResults($carrierCode, $trackingNumber, $extraInfo = array())
+    {
+        $returnData = array();
+        $requestUrl = self::ROUTE_TRACKINGS_REALTIME;
+        $sendData['tracking_number'] = $trackingNumber;
+        $sendData['carrier_code'] = $carrierCode;
+        $sendData['destination_code'] = !empty($extraInfo['destination_code']) ? $extraInfo['destination_code'] : null;
+        $sendData['tracking_ship_date'] = !empty($extraInfo['tracking_ship_date']) ? $extraInfo['tracking_ship_date'] : null;
+        $sendData['order_create_time'] = !empty($extraInfo['order_create_time']) ? $extraInfo['order_create_time'] : null;
+        $sendData['tracking_postal_code'] = !empty($extraInfo['tracking_postal_code']) ? $extraInfo['tracking_postal_code'] : null;
+        $sendData['specialNumberDestination'] = !empty($extraInfo['specialNumberDestination']) ? $extraInfo['specialNumberDestination'] : null;
+        $sendData['order'] = !empty($extraInfo['order']) ? $extraInfo['order'] : null;
+        $sendData['lang'] = !empty($extraInfo['lang']) ? $extraInfo['lang'] : null;
+        $result = $this->_getApiData($requestUrl, 'POST', $sendData);
+        if ($result) {
+            $returnData = json_decode($result, true);
+        }
+        return $returnData;
+    }
+
+    /**
+     * Delete multiple tracking.
+     * @param $multipleData
+     * @return array|mixed
+     */
+    public function deleteMultipleTracking($multipleData)
+    {
+        $returnData = array();
+        $sendData = array();
+        $requestUrl = self::ROUTE_TRACKINGS_RELETE;
+        if (!empty($multipleData)) {
+            foreach ($multipleData as $val) {
+                $items = array();
+                $items['tracking_number'] = !empty($val['tracking_number']) ? $val['tracking_number'] : null;
+                $items['carrier_code'] = !empty($val['carrier_code']) ? $val['carrier_code'] : null;
+                $sendData[] = $items;
+            }
+        }
+        $result = $this->_getApiData($requestUrl, 'POST', $sendData);
+        if ($result) {
+            $returnData = json_decode($result, true);
+        }
+        return $returnData;
+    }
+
+    /**
+     * Update carrier code
+     * @param $tracking_number
+     * @param $carrier_code
+     * @param $update_carrier_code
+     * @return array|mixed
+     */
+    public function updateCarrierCode($tracking_number, $carrier_code, $update_carrier_code)
+    {
+        $returnData = array();
+        $sendData = array();
+        $requestUrl = self::ROUTE_TRACKINGS_UPDATE;
+        $sendData["tracking_number"] = $tracking_number;
+        $sendData["carrier_code"] = $carrier_code;
+        $sendData["update_carrier_code"] = $update_carrier_code;
+        $result = $this->_getApiData($requestUrl, 'POST', $sendData);
+        if ($result) {
+            $returnData = json_decode($result, true);
+        }
+        return $returnData;
+    }
+
+    /**
+     * Get user's balance.
+     * @access public
+     * @return array
+     */
+    public function getUserInfoBalance()
+    {
+        $returnData = array();
+        $requestUrl = self::ROUTE_TRACKINGS_GETUSEINFO;
+        $result = $this->_getApiData($requestUrl, 'GET');
+        if ($result) {
+            $returnData = json_decode($result, true);
+        }
+        return $returnData;
+    }
+
+    /**
+     * @access public
+     * @param int $created_at_min Start date and time of trackings created (optional)
+     * @param int $created_at_max End date and time of trackings created (optional)
+     * @param int $order_created_time_min Start date and time of order created (optional)
+     * @param int $order_created_time_max End date and time of order created (optional)
+     * @return array
+     */
+    public function getStatusNumberCount(
+        $created_at_min = 0,
+        $created_at_max = 0,
+        $order_created_time_min = 0,
+        $order_created_time_max = 0
+    ) {
+        $returnData = array();
+        $sendData = array();
+        $requestUrl = self::ROUTE_TRACKINGS_GETSTATUS;
+        $sendData["created_at_min"] = !empty($created_at_min) ? $created_at_min : null;
+        $sendData["created_at_max"] = !empty($created_at_max) ? $created_at_max : time();
+        $sendData["order_created_time_min"] = !empty($order_created_time_min) ? $order_created_time_min : null;
+        $sendData["order_created_time_max"] = !empty($order_created_time_max) ? $order_created_time_max : time();
+        $result = $this->_getApiData($requestUrl, 'GET', $sendData);
+        if ($result) {
+            $returnData = json_decode($result, true);
+        }
+        return $returnData;
+    }
+
+    /**
+     * @access public
+     * @param array $multipleData (tracking number,carrier code)
+     * @param string $carrierCode Carrier code
+     * @return array
+     */
+    public function setNumberNotUpdate($multipleData)
+    {
+        $returnData = array();
+        $sendData = array();
+        $requestUrl = self::ROUTE_TRACKINGS_NOTUPDATE;
+        if (!empty($multipleData)) {
+            foreach ($multipleData as $val) {
+                $items = array();
+                $items['tracking_number'] = !empty($val['tracking_number']) ? $val['tracking_number'] : null;
+                $items['carrier_code'] = !empty($val['carrier_code']) ? $val['carrier_code'] : null;
+                $sendData[] = $items;
+            }
+        }
+        $result = $this->_getApiData($requestUrl, 'POST', $sendData);
+        if ($result) {
+            $returnData = json_decode($result, true);
+        }
+        return $returnData;
+    }
+
+    /**
+     * @access public
+     * @param array $multipleData (Country two code,Post code or city name,company),eg:array(0=>array("CN","518131","DHL"));
+     * @return array
+     */
+    public function searchDeliveryIsRemote($multipleData)
+    {
+        $returnData = array();
+        $sendData = array();
+        $requestUrl = self::ROUTE_TRACKINGS_REMOTE;
+        if (!empty($multipleData)) {
+            foreach ($multipleData as $val) {
+                $items = array();
+                $items['country'] = !empty($val['country']) ? $val['country'] : null;
+                $items['postcode'] = !empty($val['postcode']) ? $val['postcode'] : null;
+                $items['company'] = !empty($val['company']) ? $val['company'] : null;
+                $sendData[] = $items;
+            }
+        }
+        $result = $this->_getApiData($requestUrl, 'POST', $sendData);
+        if ($result) {
+            $returnData = json_decode($result, true);
+        }
+        return $returnData;
+    }
+
+    /**
+     * @access public
+     * @param array $multipleData (Country two code,Post code or city name,company),eg:array(0=>array("CN","518131","DHL"));
+     * @return array
+     */
+    public function getCarrierCostTime($multipleData)
+    {
+        $returnData = array();
+        $sendData = array();
+        $requestUrl = self::ROUTE_TRACKINGS_COSTTIME;
+        if (!empty($multipleData)) {
+            foreach ($multipleData as $val) {
+                $items = array();
+                $items['carrier_code'] = !empty($val['carrier_code']) ? $val['carrier_code'] : null;
+                $items['original'] = !empty($val['original']) ? $val['original'] : null;
+                $items['destination'] = !empty($val['destination']) ? $val['destination'] : null;
+                $sendData[] = $items;
+            }
+        }
+        $result = $this->_getApiData($requestUrl, 'POST', $sendData);
+        if ($result) {
+            $returnData = json_decode($result, true);
+        }
+        return $returnData;
+    }
+
+    /**
+     * update carrier code
+     * @access public
+     * @param array $multipleData (Country two code,Post code or city name,company),eg:array(0=>array("CN","518131","DHL"));
+     * @return array
+     */
+    public function updateMultipleTrackItem($multipleData)
+    {
+        $returnData = array();
+        $sendData = array();
+        $requestUrl = self::ROUTE_TRACKINGS_UPDATEMORE;
+        if (!empty($multipleData)) {
+            foreach ($multipleData as $val) {
+                $items = array();
+                $items['tracking_number'] = !empty($val['tracking_number']) ? $val['tracking_number'] : null;
+                $items['carrier_code'] = !empty($val['carrier_code']) ? $val['carrier_code'] : null;
+                $items['title'] = !empty($val['title']) ? $val['title'] : null;
+                $items['logistics_channel'] = !empty($val['logistics_channel']) ? $val['logistics_channel'] : null;
+                $items['customer_name'] = !empty($val['customer_name']) ? $val['customer_name'] : null;
+                $items['customer_email'] = !empty($val['customer_email']) ? $val['customer_email'] : null;
+                $items['order_id'] = !empty($val['order_id']) ? $val['order_id'] : null;
+                $items['destination_code'] = !empty($val['destination_code']) ? $val['destination_code'] : null;
+                $items['status'] = !empty($val['status']) ? $val['status'] : null;
+                $sendData[] = $items;
+            }
+        }
+        $result = $this->_getApiData($requestUrl, 'POST', $sendData);
+        if ($result) {
+            $returnData = json_decode($result, true);
+        }
+        return $returnData;
+    }
+
 }

@@ -6,9 +6,9 @@
  * Time: 13:50.
  */
 
-namespace Erp\Logistics;
+namespace CareyWong\Logistics;
 
-use Erp\Logistics\Exceptions\InvalidArgumentException;
+use CareyWong\Logistics\Exceptions\InvalidArgumentException;
 
 class Logistics
 {

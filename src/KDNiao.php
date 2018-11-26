@@ -6,10 +6,10 @@
  * Time: 13:51.
  */
 
-namespace Erp\Logistics;
+namespace CareyWong\Logistics;
 
-use Erp\Logistics\Exceptions\HttpException;
-use Erp\Logistics\Exceptions\InvalidArgumentException;
+use CareyWong\Logistics\Exceptions\HttpException;
+use CareyWong\Logistics\Exceptions\InvalidArgumentException;
 
 class KDNiao implements Service
 {

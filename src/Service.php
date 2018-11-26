@@ -6,7 +6,7 @@
  * Time: 15:00.
  */
 
-namespace Erp\Logistics;
+namespace CareyWong\Logistics;
 
 interface Service
 {

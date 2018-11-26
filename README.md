@@ -36,7 +36,7 @@ composer require careywong/logistics -vvv
 ## 使用
 ### 快递鸟物流服务
 ```php
-use Erp\Logistics\Logistics;
+use CareyWong\Logistics\Logistics;
 $logistics = new Logistics();
 
 $service = $logistics->getInstance('KDNiao');
@@ -51,7 +51,7 @@ $service->getTrace($shipmentId, $trackingNumber);
 
 ### Trackingmore 物流服务
 ```php
-use Erp\Logistics\Logistics;
+use CareyWong\Logistics\Logistics;
 $logistics = new Logistics();
 
 $service = $logistics->getInstance('Trackingmore');

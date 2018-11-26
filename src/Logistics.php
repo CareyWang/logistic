@@ -3,7 +3,7 @@
  * Created by PhpStorm.
  * User: cwang
  * Date: 2018/9/19
- * Time: 13:50
+ * Time: 13:50.
  */
 
 namespace Erp\Logistics;
@@ -30,7 +30,7 @@ class Logistics
             default:
                 throw new InvalidArgumentException("目前不支持 {$className} 渠道");
         }
+
         return $this->service;
     }
-
 }

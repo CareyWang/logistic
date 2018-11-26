@@ -3,7 +3,7 @@
  * Created by PhpStorm.
  * User: cwang
  * Date: 2018/9/19
- * Time: 13:50
+ * Time: 13:50.
  */
 
 namespace Erp\Logistics;
@@ -30,15 +30,15 @@ class Trackingmore implements Service
     const ROUTE_TRACKINGS_UPDATEMORE = 'trackings/updatemore';
     protected $apiKey = 'YOUR API KEY';
     protected $shipperCodeMap = [
-        1 => 'sf-express',
-        2 => 'bestex',
-        3 => 'zto',
-        4 => 'sto',
-        5 => 'yto',
-        6 => 'yunda',
-        7 => 'china-post',
-        8 => 'china-ems',
-        9 => 'ttkd',
+        1  => 'sf-express',
+        2  => 'bestex',
+        3  => 'zto',
+        4  => 'sto',
+        5  => 'yto',
+        6  => 'yunda',
+        7  => 'china-post',
+        8  => 'china-ems',
+        9  => 'ttkd',
         10 => '',
         11 => 'uc-express',
         12 => 'deppon',
@@ -66,14 +66,15 @@ class Trackingmore implements Service
         }
 
         $trace = $this->getRealtimeTrackingResults($shipperCode, $trackingNumber);
+
         return $this->formatTrace($trace);
     }
 
     public function getShipper($trackingNumber)
     {
         $formatShipper = [
-            'success' => false,
-            'message' => '',
+            'success'  => false,
+            'message'  => '',
             'shippers' => [],
         ];
 
@@ -97,13 +98,13 @@ class Trackingmore implements Service
     public function formatTrace($trace)
     {
         $formatTrace = [
-            'success' => false,
-            'message' => '',
+            'success'        => false,
+            'message'        => '',
             'trackingNumber' => '',
-            'trackinfo' => [],
-            'lastEvent' => '',
+            'trackinfo'      => [],
+            'lastEvent'      => '',
             'lastUpdateTime' => '',
-            'packageStatus' => '', // 0: 无轨迹，1：在途，2：已签收，3：异常
+            'packageStatus'  => '', // 0: 无轨迹，1：在途，2：已签收，3：异常
         ];
 
         if ($trace['meta']['type'] == 'Success') {
@@ -145,7 +146,7 @@ class Trackingmore implements Service
     protected function _getApiData($route, $method = 'GET', $sendData = [])
     {
         $method = strtoupper($method);
-        $requestUrl = self::API_BASE_URL . $route;
+        $requestUrl = self::API_BASE_URL.$route;
         $curlObj = curl_init();
         curl_setopt($curlObj, CURLOPT_URL, $requestUrl);
         if ($method == 'GET') {
@@ -164,13 +165,13 @@ class Trackingmore implements Service
         curl_setopt($curlObj, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curlObj, CURLOPT_HEADER, 0);
         $headers = [
-            'Trackingmore-Api-Key: ' . $this->apiKey,
+            'Trackingmore-Api-Key: '.$this->apiKey,
             'Content-Type: application/json',
         ];
         if ($sendData) {
             $dataString = json_encode($sendData);
             curl_setopt($curlObj, CURLOPT_POSTFIELDS, $dataString);
-            $headers[] = 'Content-Length: ' . strlen($dataString);
+            $headers[] = 'Content-Length: '.strlen($dataString);
         }
         curl_setopt($curlObj, CURLOPT_HTTPHEADER, $headers);
         $response = curl_exec($curlObj);
@@ -222,14 +223,14 @@ class Trackingmore implements Service
      *
      * @param string $numbers
      * @param string $orders
-     * @param int $page
-     * @param int $limit
-     * @param int $createdAtMin
-     * @param int $createdAtMax
-     * @param int $update_time_min
-     * @param int $update_time_max
-     * @param int $order_created_time_min
-     * @param int $order_created_time_max
+     * @param int    $page
+     * @param int    $limit
+     * @param int    $createdAtMin
+     * @param int    $createdAtMax
+     * @param int    $update_time_min
+     * @param int    $update_time_max
+     * @param int    $order_created_time_min
+     * @param int    $order_created_time_max
      * @param string $lang
      *
      * @return array|mixed
@@ -362,7 +363,7 @@ class Trackingmore implements Service
     public function getSingleTrackingResult($carrierCode, $trackingNumber, $lang = '')
     {
         $returnData = [];
-        $requestUrl = self::ROUTE_TRACKINGS . '/' . $carrierCode . '/' . $trackingNumber . '/' . $lang;
+        $requestUrl = self::ROUTE_TRACKINGS.'/'.$carrierCode.'/'.$trackingNumber.'/'.$lang;
         $result = $this->_getApiData($requestUrl, 'GET');
         if ($result) {
             $returnData = json_decode($result, true);
@@ -375,15 +376,15 @@ class Trackingmore implements Service
      * Update Tracking item.
      *
      * @param string $trackingNumber Tracking number
-     * @param string $carrierCode Carrier code
-     * @param array $extraInfo (Title,Customer name,email,order ID,customer phone,destination code,status) (optional)
+     * @param string $carrierCode    Carrier code
+     * @param array  $extraInfo      (Title,Customer name,email,order ID,customer phone,destination code,status) (optional)
      *
      * @return array
      */
     public function updateTrackingItem($carrierCode, $trackingNumber, $extraInfo)
     {
         $returnData = [];
-        $requestUrl = self::ROUTE_TRACKINGS . '/' . $carrierCode . '/' . $trackingNumber;
+        $requestUrl = self::ROUTE_TRACKINGS.'/'.$carrierCode.'/'.$trackingNumber;
         $sendData['title'] = !empty($extraInfo['title']) ? $extraInfo['title'] : null;
         $sendData['logistics_channel'] = !empty($extraInfo['logistics_channel']) ? $extraInfo['logistics_channel'] : null;
         $sendData['customer_name'] = !empty($extraInfo['customer_name']) ? $extraInfo['customer_name'] : null;
@@ -411,7 +412,7 @@ class Trackingmore implements Service
     public function deleteTrackingItem($carrierCode, $trackingNumber)
     {
         $returnData = [];
-        $requestUrl = self::ROUTE_TRACKINGS . '/' . $carrierCode . '/' . $trackingNumber;
+        $requestUrl = self::ROUTE_TRACKINGS.'/'.$carrierCode.'/'.$trackingNumber;
         $result = $this->_getApiData($requestUrl, 'DELETE');
         if ($result) {
             $returnData = json_decode($result, true);
@@ -521,8 +522,8 @@ class Trackingmore implements Service
     }
 
     /**
-     * @param int $created_at_min Start date and time of trackings created (optional)
-     * @param int $created_at_max End date and time of trackings created (optional)
+     * @param int $created_at_min         Start date and time of trackings created (optional)
+     * @param int $created_at_max         End date and time of trackings created (optional)
      * @param int $order_created_time_min Start date and time of order created (optional)
      * @param int $order_created_time_max End date and time of order created (optional)
      *
@@ -550,8 +551,8 @@ class Trackingmore implements Service
     }
 
     /**
-     * @param array $multipleData (tracking number,carrier code)
-     * @param string $carrierCode Carrier code
+     * @param array  $multipleData (tracking number,carrier code)
+     * @param string $carrierCode  Carrier code
      *
      * @return array
      */

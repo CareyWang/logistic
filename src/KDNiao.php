@@ -3,7 +3,7 @@
  * Created by PhpStorm.
  * User: cwang
  * Date: 2018/9/19
- * Time: 13:51
+ * Time: 13:51.
  */
 
 namespace Erp\Logistics;
@@ -18,15 +18,15 @@ class KDNiao implements Service
     protected $AppKey;
     protected $RequestType;
     protected $shipperCodeMap = [
-        1 => 'SF',
-        2 => 'HTKY',
-        3 => 'ZTO',
-        4 => 'STO',
-        5 => 'YTO',
-        6 => 'YD',
-        7 => 'YZPY',
-        8 => 'EMS',
-        9 => 'HHTT',
+        1  => 'SF',
+        2  => 'HTKY',
+        3  => 'ZTO',
+        4  => 'STO',
+        5  => 'YTO',
+        6  => 'YD',
+        7  => 'YZPY',
+        8  => 'EMS',
+        9  => 'HHTT',
         10 => 'JD',
         11 => 'UC',
         12 => 'DBL',
@@ -48,12 +48,15 @@ class KDNiao implements Service
     }
 
     /**
-     * 获取快递物流轨迹(实现接口)
+     * 获取快递物流轨迹(实现接口).
+     *
      * @param $shipmentId
      * @param $trackingNumber
-     * @return mixed|void
+     *
      * @throws HttpException
      * @throws InvalidArgumentException
+     *
+     * @return mixed|void
      */
     public function getTrace($shipmentId, $trackingNumber)
     {
@@ -63,19 +66,22 @@ class KDNiao implements Service
         }
 
         $trace = $this->_getTrace($shipperCode, $trackingNumber);
+
         return $this->formatTrace($trace);
     }
 
     /**
-     * 获取快递单号所属快递公司(实现接口)
+     * 获取快递单号所属快递公司(实现接口).
+     *
      * @param $trackingNumber
+     *
      * @return mixed|void
      */
     public function getShipper($trackingNumber)
     {
         $formatShipper = [
-            'success' => false,
-            'message' => '',
+            'success'  => false,
+            'message'  => '',
             'shippers' => [],
         ];
 
@@ -97,13 +103,13 @@ class KDNiao implements Service
     public function formatTrace($trace)
     {
         $formatTrace = [
-            'success' => '',
-            'message' => '',
+            'success'        => '',
+            'message'        => '',
             'trackingNumber' => '',
-            'trackinfo' => [],
-            'lastEvent' => '',
+            'trackinfo'      => [],
+            'lastEvent'      => '',
             'lastUpdateTime' => '',
-            'packageStatus' => '', // 0: 无轨迹，1：在途，2：已签收，3：异常
+            'packageStatus'  => '', // 0: 无轨迹，1：在途，2：已签收，3：异常
         ];
 
         if ($trace['Success']) {
@@ -163,7 +169,7 @@ class KDNiao implements Service
     public function _getTrace($ShipperCode, $LogisticCode)
     {
         $request = [
-            'ShipperCode' => $ShipperCode, //快递公司编码
+            'ShipperCode'  => $ShipperCode, //快递公司编码
             'LogisticCode' => $LogisticCode, //快递单号
         ];
 
@@ -200,7 +206,7 @@ class KDNiao implements Service
         if (empty($request)) {
             return [
                 'Success' => '0',
-                'Reason' => '请求参数为空',
+                'Reason'  => '请求参数为空',
             ];
         }
 
@@ -229,7 +235,7 @@ class KDNiao implements Service
             'EBusinessID' => $this->EBusinessID,
             'RequestType' => $this->RequestType,
             'RequestData' => urlencode($requestData),
-            'DataType' => '2',
+            'DataType'    => '2',
         ];
 
         $datas['DataSign'] = $this->encrypt($requestData, $this->AppKey);
@@ -244,8 +250,8 @@ class KDNiao implements Service
     /**
      * post提交数据.
      *
-     * @param string $url 请求Url
-     * @param array $datas 提交的数据
+     * @param string $url   请求Url
+     * @param array  $datas 提交的数据
      *
      * @return url响应返回的html
      */
@@ -260,10 +266,10 @@ class KDNiao implements Service
         if (empty($url_info['port'])) {
             $url_info['port'] = 80;
         }
-        $httpheader = 'POST ' . $url_info['path'] . " HTTP/1.0\r\n";
-        $httpheader .= 'Host:' . $url_info['host'] . "\r\n";
+        $httpheader = 'POST '.$url_info['path']." HTTP/1.0\r\n";
+        $httpheader .= 'Host:'.$url_info['host']."\r\n";
         $httpheader .= "Content-Type:application/x-www-form-urlencoded\r\n";
-        $httpheader .= 'Content-Length:' . strlen($post_data) . "\r\n";
+        $httpheader .= 'Content-Length:'.strlen($post_data)."\r\n";
         $httpheader .= "Connection:close\r\n\r\n";
         $httpheader .= $post_data;
         $fd = fsockopen($url_info['host'], $url_info['port']);
@@ -298,6 +304,6 @@ class KDNiao implements Service
      */
     protected function encrypt($data, $AppKey)
     {
-        return urlencode(base64_encode(md5($data . $AppKey)));
+        return urlencode(base64_encode(md5($data.$AppKey)));
     }
 }

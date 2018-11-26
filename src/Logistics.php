@@ -1,8 +1,14 @@
 <?php
+/**
+ * Created by PhpStorm.
+ * User: cwang
+ * Date: 2018/9/19
+ * Time: 13:50
+ */
 
-namespace Careywong\Logistics;
+namespace Erp\Logistics;
 
-use Careywong\Logistics\Exceptions\InvalidArgumentException;
+use Erp\Logistics\Exceptions\InvalidArgumentException;
 
 class Logistics
 {
@@ -10,18 +16,21 @@ class Logistics
         'KDNiao',
         'Trackingmore',
     ];
+    private $service;
 
     public function getInstance($className)
     {
         switch ($className) {
             case 'KDNiao':
-                return new KDNiao();
+                $this->service = new KDNiao();
                 break;
             case 'Trackingmore':
-                return new Trackingmore();
+                $this->service = new Trackingmore();
                 break;
             default:
                 throw new InvalidArgumentException("目前不支持 {$className} 渠道");
         }
+        return $this->service;
     }
+
 }
